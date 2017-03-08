@@ -60,13 +60,15 @@ PUPPET = new Puppet()
 io = require('socket.io')(serv, {})
 
 io.sockets.on 'connection', (socket) ->
-  socket.id = Math.random()
-  console.log ("NEW SOCKET #{socket.id}")
-  SOCKET_LIST[socket.id] = socket;
-  player = new Player(socket.id)
-  PLAYER_LIST[socket.id] = player
-  console.log "socket #{socket.id} connected"
-
+  player = undefined
+  socket.on('acknowledged', () ->
+      socket.id = Math.random()
+      console.log ("NEW SOCKET #{socket.id}")
+      SOCKET_LIST[socket.id] = socket;
+      player = new Player(socket.id)
+      PLAYER_LIST[socket.id] = player
+      console.log "socket #{socket.id} connected"
+      )
     
   socket.on("disconnect", () ->
     console.log "socket #{socket.id} disconnected"
@@ -75,9 +77,12 @@ io.sockets.on 'connection', (socket) ->
     )
   
   socket.on('buttonPress', (msg) -> 
-    console.log(player.getInput())
-    player.setInput(msg.inputId)
-    console.log(player.getInput())
+    try
+        console.log(player.getInput())
+        player.setInput(msg.inputId)
+        console.log(player.getInput())
+    catch e
+        socket.disconnect()
 
     )
   return 

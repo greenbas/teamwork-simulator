@@ -118,21 +118,30 @@ io = require('socket.io')(serv, {});
 
 io.sockets.on('connection', function(socket) {
   var player;
-  socket.id = Math.random();
-  console.log("NEW SOCKET " + socket.id);
-  SOCKET_LIST[socket.id] = socket;
-  player = new Player(socket.id);
-  PLAYER_LIST[socket.id] = player;
-  console.log("socket " + socket.id + " connected");
+  player = void 0;
+  socket.on('acknowledged', function() {
+    socket.id = Math.random();
+    console.log("NEW SOCKET " + socket.id);
+    SOCKET_LIST[socket.id] = socket;
+    player = new Player(socket.id);
+    PLAYER_LIST[socket.id] = player;
+    return console.log("socket " + socket.id + " connected");
+  });
   socket.on("disconnect", function() {
     console.log("socket " + socket.id + " disconnected");
     delete SOCKET_LIST[socket.id];
     return delete PLAYER_LIST[socket.id];
   });
   socket.on('buttonPress', function(msg) {
-    console.log(player.getInput());
-    player.setInput(msg.inputId);
-    return console.log(player.getInput());
+    var e;
+    try {
+      console.log(player.getInput());
+      player.setInput(msg.inputId);
+      return console.log(player.getInput());
+    } catch (_error) {
+      e = _error;
+      return socket.disconnect();
+    }
   });
 });
 

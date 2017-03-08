@@ -66,6 +66,8 @@ hello world!
     var ctx = document.getElementById("ctx").getContext("2d");
     ctx.font = '30px Arial';
     var socket = io();
+    alert("press OK to activate");
+    socket.emit('acknowledged')
     socket.emit('happy',{
         reason:"it's my birthday"
     })
