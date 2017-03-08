@@ -43,6 +43,18 @@ class Puppet
 SOCKET_LIST = {}
 PLAYER_LIST = {}
 
+EMIT_ALL = (name,data) ->
+    for key,socket of SOCKET_LIST
+        socket.emit(name,data)
+
+UPDATE_TALLY = () ->
+    total = Object.keys(PLAYER_LIST).length
+    inputs = 0
+    for key,player of PLAYER_LIST
+        if !!(player.input)
+           inputs++
+    EMIT_ALL('updateTally',{msg:"#{inputs}/#{total}"})
+
 PUPPET = new Puppet()
 
 io = require('socket.io')(serv, {})
@@ -64,23 +76,15 @@ io.sockets.on 'connection', (socket) ->
   
   socket.on('buttonPress', (msg) -> 
     console.log(player.getInput())
-    player.setInput msg.inputId
-    total = Object.keys(PLAYER_LIST).length
-    inputs = 0;
-    for key,player of PLAYER_LIST
-        if !!(player.input)
-            inputs++
-        else
-            0
-    socket.emit('updateTally',{msg:"#{inputs}/#{total}"})
-    )
+    player.setInput(msg.inputId)
+    console.log(player.getInput())
 
-  socket.emit('serverMsg',{
-        msg:'hello'
-        })
+    )
   return 
 
+
 main = () -> 
+    UPDATE_TALLY()
     if playerScan()
         PUPPET.update()
         for key,socket of SOCKET_LIST

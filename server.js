@@ -1,4 +1,4 @@
-var PLAYER_LIST, PORT, PUPPET, Player, Puppet, SOCKET_LIST, app, express, io, main, playerScan, serv;
+var EMIT_ALL, PLAYER_LIST, PORT, PUPPET, Player, Puppet, SOCKET_LIST, UPDATE_TALLY, app, express, io, main, playerScan, serv;
 
 PORT = process.env.PORT || 3000;
 
@@ -87,6 +87,31 @@ SOCKET_LIST = {};
 
 PLAYER_LIST = {};
 
+EMIT_ALL = function(name, data) {
+  var key, socket, _results;
+  _results = [];
+  for (key in SOCKET_LIST) {
+    socket = SOCKET_LIST[key];
+    _results.push(socket.emit(name, data));
+  }
+  return _results;
+};
+
+UPDATE_TALLY = function() {
+  var inputs, key, player, total;
+  total = Object.keys(PLAYER_LIST).length;
+  inputs = 0;
+  for (key in PLAYER_LIST) {
+    player = PLAYER_LIST[key];
+    if (!!player.input) {
+      inputs++;
+    }
+  }
+  return EMIT_ALL('updateTally', {
+    msg: "" + inputs + "/" + total
+  });
+};
+
 PUPPET = new Puppet();
 
 io = require('socket.io')(serv, {});
@@ -105,30 +130,15 @@ io.sockets.on('connection', function(socket) {
     return delete PLAYER_LIST[socket.id];
   });
   socket.on('buttonPress', function(msg) {
-    var inputs, key, total;
     console.log(player.getInput());
     player.setInput(msg.inputId);
-    total = Object.keys(PLAYER_LIST).length;
-    inputs = 0;
-    for (key in PLAYER_LIST) {
-      player = PLAYER_LIST[key];
-      if (!!player.input) {
-        inputs++;
-      } else {
-        0;
-      }
-    }
-    return socket.emit('updateTally', {
-      msg: "" + inputs + "/" + total
-    });
-  });
-  socket.emit('serverMsg', {
-    msg: 'hello'
+    return console.log(player.getInput());
   });
 });
 
 main = function() {
   var key, socket;
+  UPDATE_TALLY();
   if (playerScan()) {
     PUPPET.update();
     for (key in SOCKET_LIST) {
