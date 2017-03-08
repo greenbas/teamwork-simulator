@@ -68,6 +68,7 @@ io.sockets.on 'connection', (socket) ->
       player = new Player(socket.id)
       PLAYER_LIST[socket.id] = player
       console.log "socket #{socket.id} connected"
+      EMIT_ALL('updatePosition',{x:PUPPET.position.x,y:PUPPET.position.y})
       )
     
   socket.on("disconnect", () ->

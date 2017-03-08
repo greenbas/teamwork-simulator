@@ -125,7 +125,11 @@ io.sockets.on('connection', function(socket) {
     SOCKET_LIST[socket.id] = socket;
     player = new Player(socket.id);
     PLAYER_LIST[socket.id] = player;
-    return console.log("socket " + socket.id + " connected");
+    console.log("socket " + socket.id + " connected");
+    return EMIT_ALL('updatePosition', {
+      x: PUPPET.position.x,
+      y: PUPPET.position.y
+    });
   });
   socket.on("disconnect", function() {
     console.log("socket " + socket.id + " disconnected");
