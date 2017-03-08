@@ -5,7 +5,7 @@ app.get '/', (req, res) ->
   res.sendFile __dirname + '/client/index.html'
   return
 app.use '/client', express.static(__dirname + '/client')
-serv.listen 2000
+serv.listen(process.env.PORT || 5000)
 console.log 'Server started.'
 
 class Player 
