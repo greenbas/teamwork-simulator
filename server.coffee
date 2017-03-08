@@ -29,13 +29,13 @@ class Puppet
                     @position.x += 10
                 when player.input is 2 
                     console.log("UP!")
-                    @position.y += 10
+                    @position.y -= 10
                 when player.input is 3 
                     console.log("LEFT!")
                     @position.x -= 10
                 when player.input is 4 
                     console.log("DOWN!")
-                    @position.y -= 10 
+                    @position.y += 10 
                 else throw new Error("invalid")
             player.resetInput()
         return 

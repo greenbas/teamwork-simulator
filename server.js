@@ -63,7 +63,7 @@
             break;
           case player.input !== 2:
             console.log("UP!");
-            this.position.y += 10;
+            this.position.y -= 10;
             break;
           case player.input !== 3:
             console.log("LEFT!");
@@ -71,7 +71,7 @@
             break;
           case player.input !== 4:
             console.log("DOWN!");
-            this.position.y -= 10;
+            this.position.y += 10;
             break;
           default:
             throw new Error("invalid");
