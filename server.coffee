@@ -1,3 +1,4 @@
+PORT = process.env.PORT || 3000
 express = require('express')
 app = express()
 serv = require('http').Server(app)
@@ -5,7 +6,7 @@ app.get '/', (req, res) ->
   res.sendFile __dirname + '/client/index.html'
   return
 app.use '/client', express.static(__dirname + '/client')
-serv.listen(process.env.PORT || 5000)
+serv.listen(PORT)
 console.log 'Server started.'
 
 class Player 
