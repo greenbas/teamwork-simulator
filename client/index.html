@@ -54,7 +54,7 @@ hello world!
 				<br>
 			</td>
 			<td>
-				<br>
+				<p id="count">0/0</p>
 			</td>
 		</tr>
 	</tbody>
@@ -92,6 +92,10 @@ hello world!
       ctx.fillText("p",data.x,data.y);
   })
   
+  socket.on("updateTally",function(msg) {
+      document.getElementById("count").innerHTML = msg.msg;
+  })
+
   
   </script>
 

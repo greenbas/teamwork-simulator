@@ -42,19 +42,22 @@ class Puppet
 
 SOCKET_LIST = {}
 PLAYER_LIST = {}
+
 PUPPET = new Puppet()
 
 io = require('socket.io')(serv, {})
 
 io.sockets.on 'connection', (socket) ->
   socket.id = Math.random()
-  socket.input = 0
+  console.log ("NEW SOCKET #{socket.id}")
   SOCKET_LIST[socket.id] = socket;
   player = new Player(socket.id)
   PLAYER_LIST[socket.id] = player
-  console.log 'socket connection'
+  console.log "socket #{socket.id} connected"
+
     
-  socket.on('disconnect', () ->
+  socket.on("disconnect", () ->
+    console.log "socket #{socket.id} disconnected"
     delete SOCKET_LIST[socket.id]
     delete PLAYER_LIST[socket.id]
     )
@@ -62,7 +65,14 @@ io.sockets.on 'connection', (socket) ->
   socket.on('buttonPress', (msg) -> 
     console.log(player.getInput())
     player.setInput msg.inputId
-    console.log(player.getInput())
+    total = Object.keys(PLAYER_LIST).length
+    inputs = 0;
+    for key,player of PLAYER_LIST
+        if !!(player.input)
+            inputs++
+        else
+            0
+    socket.emit('updateTally',{msg:"#{inputs}/#{total}"})
     )
 
   socket.emit('serverMsg',{
