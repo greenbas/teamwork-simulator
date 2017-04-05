@@ -1,11 +1,18 @@
 stopClicked = false
 INIT = true
 DEBUG = true
+
 PRINT = (x) ->
   if DEBUG
     console.log x
 CHARACTER = new createjs.Shape();
 CHARACTER.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 10)
+
+soundID = "ding";
+
+loadSound = () ->
+  createjs.Sound.registerSound("./client/ding.mp3",soundID )
+
 
 GOALS = []
 
@@ -26,6 +33,7 @@ INPUT_TO_CLASS = (n) ->
       return "glyphicon-remove-circle"
 
 
+
 do ->
   BUTTON_FUNC_GEN = (k) ->
     return ->
@@ -43,6 +51,7 @@ do ->
 ctx = new createjs.Stage('ctx');
 
 init = (data) ->
+  loadSound()
   CHARACTER.x = data.x
   CHARACTER.y = data.y
   ctx.addChild(CHARACTER)
@@ -51,25 +60,28 @@ init = (data) ->
 
 tweenMove = (msg) ->
   ###it's absolutely fucked up I have to do this, but it works, not gonna knock it###
-  [x,y,name,input] = [msg[0].x,msg[0].y,msg[0].name,msg[0].input]
-  tl = new createjs.Timeline()
-  tw = createjs.Tween.get(CHARACTER).pause().to({x,y},500)
-  CLEAR_CHAT()
-  APPEND_CHAT("""#{name}: <span class="glyphicon #{DirEnum.properties[input].glyph}"></span>""")
-  console.log("x ", x, "y ", y)
-  tl.addTween tw
-  tl.setPaused(true)
-
-  for data in msg[1..]
-    tl.setPaused(false)
-    [x,y,name,input] = [data.x,data.y,data.name,data.input]
-    tw = tw.pause().to({x,y},500)
-    tl.addTween tw
+  try
+    [x,y,name,input] = [msg[0].x,msg[0].y,msg[0].name,msg[0].input]
+    tl = new createjs.Timeline()
+    tw = createjs.Tween.get(CHARACTER).pause().to({x,y},500)
+    CLEAR_CHAT()
     APPEND_CHAT("""#{name}: <span class="glyphicon #{DirEnum.properties[input].glyph}"></span>""")
-    tl.setPaused(false)
+    console.log("x ", x, "y ", y)
+    tl.addTween tw
+    tl.setPaused(true)
 
-  tl.setPaused(false)
-  return
+    for data in msg[1..]
+      tl.setPaused(false)
+      [x,y,name,input] = [data.x,data.y,data.name,data.input]
+      tw = tw.pause().to({x,y},500)
+      tl.addTween tw
+      APPEND_CHAT("""#{name}: <span class="glyphicon #{DirEnum.properties[input].glyph}"></span>""")
+      tl.setPaused(false)
+
+    tl.setPaused(false)
+    return
+  catch err
+    console.log(err)
 
 CLEAR_CHAT = () ->
    chat = document.getElementById('chat-text')
@@ -99,11 +111,14 @@ socket.on 'updatePosition', (data) ->
     tweenMove(data.q)
     return
   catch err
-    console.log(e)
+    console.log(err)
 
 socket.on 'updateTally', (msg) ->
   document.getElementById('count').innerHTML = msg.msg
   return
+
+playsound = () ->
+  createjs.Sound.play(soundID)
 
 socket.on 'initalize', (msg) ->
   init(msg)
@@ -115,6 +130,7 @@ socket.on 'currentGoals', (msg) ->
     ctx.update()
 socket.on 'goalHit',(msg) ->
   id = msg.goalID
+  playsound()
   ctx.removeChild(GOALS[id])
   GOALS.splice(id,1)
   ctx.update()

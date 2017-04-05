@@ -1,4 +1,4 @@
-var APPEND_CHAT, CHARACTER, CLEAR_CHAT, DEBUG, DIRECTION, GOALS, INIT, INPUT_TO_CLASS, PRINT, UNCLICK_ALL, ctx, init, name, socket, stopClicked, tweenMove;
+var APPEND_CHAT, CHARACTER, CLEAR_CHAT, DEBUG, DIRECTION, GOALS, INIT, INPUT_TO_CLASS, PRINT, UNCLICK_ALL, ctx, init, loadSound, name, playsound, socket, soundID, stopClicked, tweenMove;
 
 stopClicked = false;
 
@@ -15,6 +15,12 @@ PRINT = function(x) {
 CHARACTER = new createjs.Shape();
 
 CHARACTER.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 10);
+
+soundID = "ding";
+
+loadSound = function() {
+  return createjs.Sound.registerSound("./client/ding.mp3", soundID);
+};
 
 GOALS = [];
 
@@ -74,6 +80,7 @@ INPUT_TO_CLASS = function(n) {
 ctx = new createjs.Stage('ctx');
 
 init = function(data) {
+  loadSound();
   CHARACTER.x = data.x;
   CHARACTER.y = data.y;
   ctx.addChild(CHARACTER);
@@ -84,32 +91,37 @@ init = function(data) {
 tweenMove = function(msg) {
 
   /*it's absolutely fucked up I have to do this, but it works, not gonna knock it */
-  var data, input, name, tl, tw, x, y, _i, _len, _ref, _ref1, _ref2;
-  _ref = [msg[0].x, msg[0].y, msg[0].name, msg[0].input], x = _ref[0], y = _ref[1], name = _ref[2], input = _ref[3];
-  tl = new createjs.Timeline();
-  tw = createjs.Tween.get(CHARACTER).pause().to({
-    x: x,
-    y: y
-  }, 500);
-  CLEAR_CHAT();
-  APPEND_CHAT("" + name + ": <span class=\"glyphicon " + DirEnum.properties[input].glyph + "\"></span>");
-  console.log("x ", x, "y ", y);
-  tl.addTween(tw);
-  tl.setPaused(true);
-  _ref1 = msg.slice(1);
-  for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-    data = _ref1[_i];
-    tl.setPaused(false);
-    _ref2 = [data.x, data.y, data.name, data.input], x = _ref2[0], y = _ref2[1], name = _ref2[2], input = _ref2[3];
-    tw = tw.pause().to({
+  var data, err, input, name, tl, tw, x, y, _i, _len, _ref, _ref1, _ref2;
+  try {
+    _ref = [msg[0].x, msg[0].y, msg[0].name, msg[0].input], x = _ref[0], y = _ref[1], name = _ref[2], input = _ref[3];
+    tl = new createjs.Timeline();
+    tw = createjs.Tween.get(CHARACTER).pause().to({
       x: x,
       y: y
     }, 500);
-    tl.addTween(tw);
+    CLEAR_CHAT();
     APPEND_CHAT("" + name + ": <span class=\"glyphicon " + DirEnum.properties[input].glyph + "\"></span>");
+    console.log("x ", x, "y ", y);
+    tl.addTween(tw);
+    tl.setPaused(true);
+    _ref1 = msg.slice(1);
+    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+      data = _ref1[_i];
+      tl.setPaused(false);
+      _ref2 = [data.x, data.y, data.name, data.input], x = _ref2[0], y = _ref2[1], name = _ref2[2], input = _ref2[3];
+      tw = tw.pause().to({
+        x: x,
+        y: y
+      }, 500);
+      tl.addTween(tw);
+      APPEND_CHAT("" + name + ": <span class=\"glyphicon " + DirEnum.properties[input].glyph + "\"></span>");
+      tl.setPaused(false);
+    }
     tl.setPaused(false);
+  } catch (_error) {
+    err = _error;
+    return console.log(err);
   }
-  tl.setPaused(false);
 };
 
 CLEAR_CHAT = function() {
@@ -154,13 +166,17 @@ socket.on('updatePosition', function(data) {
     tweenMove(data.q);
   } catch (_error) {
     err = _error;
-    return console.log(e);
+    return console.log(err);
   }
 });
 
 socket.on('updateTally', function(msg) {
   document.getElementById('count').innerHTML = msg.msg;
 });
+
+playsound = function() {
+  return createjs.Sound.play(soundID);
+};
 
 socket.on('initalize', function(msg) {
   return init(msg);
@@ -183,6 +199,7 @@ socket.on('currentGoals', function(msg) {
 socket.on('goalHit', function(msg) {
   var id;
   id = msg.goalID;
+  playsound();
   ctx.removeChild(GOALS[id]);
   GOALS.splice(id, 1);
   return ctx.update();
