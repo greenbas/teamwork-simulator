@@ -1,4 +1,4 @@
-var CHARACTER, DEBUG, DIRECTION, GOALS, INIT, PRINT, UNCLICK_ALL, ctx, init, name, socket, stopClicked, tweenMove;
+var APPEND_CHAT, CHARACTER, CLEAR_CHAT, DEBUG, DIRECTION, GOALS, INIT, INPUT_TO_CLASS, PRINT, UNCLICK_ALL, ctx, init, name, socket, stopClicked, tweenMove;
 
 stopClicked = false;
 
@@ -38,6 +38,13 @@ UNCLICK_ALL = function() {
     }
   }
   return _results;
+};
+
+INPUT_TO_CLASS = function(n) {
+  switch (false) {
+    case n !== 0:
+      return "glyphicon-remove-circle";
+  }
 };
 
 (function() {
@@ -84,6 +91,8 @@ tweenMove = function(msg) {
     x: x,
     y: y
   }, 500);
+  CLEAR_CHAT();
+  APPEND_CHAT("" + name + ": <span class=\"glyphicon " + DirEnum.properties[input].glyph + "\"></span>");
   console.log("x ", x, "y ", y);
   tl.addTween(tw);
   tl.setPaused(true);
@@ -97,9 +106,22 @@ tweenMove = function(msg) {
       y: y
     }, 500);
     tl.addTween(tw);
+    APPEND_CHAT("" + name + ": <span class=\"glyphicon " + DirEnum.properties[input].glyph + "\"></span>");
     tl.setPaused(false);
   }
   tl.setPaused(false);
+};
+
+CLEAR_CHAT = function() {
+  var chat;
+  chat = document.getElementById('chat-text');
+  return chat.innerHTML = "";
+};
+
+APPEND_CHAT = function(content) {
+  var chat;
+  chat = document.getElementById('chat-text');
+  return chat.innerHTML += "<div>" + content + "</div>";
 };
 
 createjs.Ticker.setFPS(60);
@@ -119,16 +141,21 @@ socket.emit('acknowledged', {
 socket.on('serverMsg', function(data) {});
 
 socket.on('updatePosition', function(data) {
-  console.log('UPDATE!');
+  var err;
+  try {
 
-  /*Don't allow multi-stops */
-  if (DIRECTION === 0 && !stopClicked) {
-    stopClicked = true;
-  } else if (DIRECTION !== 0 && stopClicked) {
-    stopClicked = false;
+    /*Don't allow multi-stops */
+    if (DIRECTION === 0 && !stopClicked) {
+      stopClicked = true;
+    } else if (DIRECTION !== 0 && stopClicked) {
+      stopClicked = false;
+    }
+    UNCLICK_ALL();
+    tweenMove(data.q);
+  } catch (_error) {
+    err = _error;
+    return console.log(e);
   }
-  UNCLICK_ALL();
-  tweenMove(data.q);
 });
 
 socket.on('updateTally', function(msg) {
@@ -164,4 +191,8 @@ socket.on('goalHit', function(msg) {
 socket.on('win', function() {
   alert("YOU WIN");
   return socket.disconnect();
+});
+
+socket.on('chatUpdate', function(msg) {
+  return APPEND_CHAT(msg.msg);
 });

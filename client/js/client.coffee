@@ -20,6 +20,10 @@ UNCLICK_ALL = () ->
     unless id is 0 and stopClicked
       button.dom.className = "dirButton"
 
+INPUT_TO_CLASS = (n) ->
+  switch
+    when n is 0
+      return "glyphicon-remove-circle"
 
 
 do ->
@@ -50,6 +54,8 @@ tweenMove = (msg) ->
   [x,y,name,input] = [msg[0].x,msg[0].y,msg[0].name,msg[0].input]
   tl = new createjs.Timeline()
   tw = createjs.Tween.get(CHARACTER).pause().to({x,y},500)
+  CLEAR_CHAT()
+  APPEND_CHAT("""#{name}: <span class="glyphicon #{DirEnum.properties[input].glyph}"></span>""")
   console.log("x ", x, "y ", y)
   tl.addTween tw
   tl.setPaused(true)
@@ -59,11 +65,19 @@ tweenMove = (msg) ->
     [x,y,name,input] = [data.x,data.y,data.name,data.input]
     tw = tw.pause().to({x,y},500)
     tl.addTween tw
-
+    APPEND_CHAT("""#{name}: <span class="glyphicon #{DirEnum.properties[input].glyph}"></span>""")
     tl.setPaused(false)
+
   tl.setPaused(false)
   return
 
+CLEAR_CHAT = () ->
+   chat = document.getElementById('chat-text')
+   chat.innerHTML = ""
+
+APPEND_CHAT = (content) ->
+  chat = document.getElementById('chat-text')
+  chat.innerHTML += "<div>#{content}</div>"
 
 
 createjs.Ticker.setFPS(60);
@@ -76,7 +90,6 @@ socket.emit 'acknowledged', {name}
 socket.on 'serverMsg', (data) ->
 socket.on 'updatePosition', (data) ->
   try
-    console.log 'UPDATE!'
     ###Don't allow multi-stops ###
     if DIRECTION is 0 and not stopClicked
       stopClicked = true
@@ -85,11 +98,13 @@ socket.on 'updatePosition', (data) ->
     UNCLICK_ALL()
     tweenMove(data.q)
     return
-  console err
+  catch err
     console.log(e)
+
 socket.on 'updateTally', (msg) ->
   document.getElementById('count').innerHTML = msg.msg
   return
+
 socket.on 'initalize', (msg) ->
   init(msg)
 socket.on 'currentGoals', (msg) ->
@@ -106,3 +121,5 @@ socket.on 'goalHit',(msg) ->
 socket.on 'win',() ->
   alert "YOU WIN"
   socket.disconnect()
+socket.on 'chatUpdate', (msg) ->
+  APPEND_CHAT(msg.msg)

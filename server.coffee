@@ -92,7 +92,7 @@ UPDATE_TALLY = () ->
            inputs++
     EMIT_ALL('updateTally',{msg:"#{inputs} of #{total} players have entered inputs"})
 
-
+ROOM_EMPTY = true
 
 PUPPET = new Puppet()
 
@@ -101,6 +101,7 @@ io = require('socket.io')(serv, {})
 io.sockets.on 'connection', (socket) ->
   player = undefined
   socket.on('acknowledged', (msg) ->
+      ROOM_EMPTY = false;
       socket.id = Math.random()
       console.log ("NEW SOCKET #{socket.id}")
       SOCKET_LIST[socket.id] = socket;
@@ -115,6 +116,15 @@ io.sockets.on 'connection', (socket) ->
     console.log "socket #{socket.id} disconnected"
     delete SOCKET_LIST[socket.id]
     delete PLAYER_LIST[socket.id]
+    if Object.keys(SOCKET_LIST).length is 0
+      PUPPET.position = {x: 250,y: 250,f: 1}
+      GOALS = [
+        {x:100,y:300},
+        {x:300,y:100},
+        {x:25,y:400},
+        {x:400,y:25},
+        {x:150,y:450}
+      ]
     )
 
   socket.on('buttonPress', (msg) ->
