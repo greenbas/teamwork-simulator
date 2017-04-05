@@ -31,7 +31,7 @@ hello world!
 				<button id="dirleft">LEFT</button>
 			</td>
 			<td style="width: 22.9249%;">
-				<button id="dirstop">STOP</button>
+				<br>
 			</td>
 			<td style="width: 19.5653%;">
 				<button id="dirright">RIGHT</button>
@@ -62,9 +62,43 @@ hello world!
 
 
   <script src="client/js/socketio.js"></script>
-	<script src="client/js/dirEnum.js"></script>
-  <script src="client/js/client.js">
+  <script>
+    var ctx = document.getElementById("ctx").getContext("2d");
+    ctx.font = '30px Arial';
+    var socket = io();
+    alert("press OK to activate");
+    socket.emit('acknowledged')
+    socket.emit('happy',{
+        reason:"it's my birthday"
+    })
+    socket.on('serverMsg', function(data) {
+    
+    return console.log(data.msg);
+  })
+  document.getElementById("dirright").addEventListener("click",function() {
+      socket.emit('buttonPress',{inputId:1})
+  })
+  document.getElementById("dirup").addEventListener("click",function() {
+      socket.emit('buttonPress',{inputId:2})
+  })  
+  document.getElementById("dirleft").addEventListener("click",function() {
+      socket.emit('buttonPress',{inputId:3})
+  })  
+  document.getElementById("dirdown").addEventListener("click",function() {
+      socket.emit('buttonPress',{inputId:4})
+  })
+  
+  socket.on('updatePosition',function(data) {
+      console.log("UPDATE!")
+      ctx.clearRect(0,0,500,500);
+      ctx.fillText("p",data.x,data.y);
+  })
+  
+  socket.on("updateTally",function(msg) {
+      document.getElementById("count").innerHTML = msg.msg;
+  })
 
+  
   </script>
 
 <script>
