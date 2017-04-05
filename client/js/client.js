@@ -1,4 +1,4 @@
-var APPEND_CHAT, CHARACTER, CLEAR_CHAT, DEBUG, DIRECTION, GOALS, INIT, INPUT_TO_CLASS, PRINT, UNCLICK_ALL, ctx, init, loadSound, name, playsound, socket, soundID, stopClicked, tweenMove;
+var APPEND_CHAT, CHARACTER, CLEAR_CHAT, DEBUG, DIRECTION, GOALS, INIT, INPUT_TO_CLASS, PRINT, UNCLICK_ALL, ctx, init, loadSound, name, playsound, socket, soundID, stopClicked, tweenMove, victoryMusic, victorySoundID;
 
 stopClicked = false;
 
@@ -18,8 +18,11 @@ CHARACTER.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 10);
 
 soundID = "ding";
 
+victorySoundID = "daDaDa";
+
 loadSound = function() {
-  return createjs.Sound.registerSound("./client/ding.mp3", soundID);
+  createjs.Sound.registerSound("./client/ding.mp3", soundID);
+  return createjs.Sound.registerSound("./client/ff.mp3", victorySoundID);
 };
 
 GOALS = [];
@@ -178,6 +181,10 @@ playsound = function() {
   return createjs.Sound.play(soundID);
 };
 
+victoryMusic = function() {
+  return createjs.Sound.play(victorySoundID);
+};
+
 socket.on('initalize', function(msg) {
   return init(msg);
 });
@@ -206,6 +213,7 @@ socket.on('goalHit', function(msg) {
 });
 
 socket.on('win', function() {
+  victoryMusic();
   alert("YOU WIN");
   return socket.disconnect();
 });

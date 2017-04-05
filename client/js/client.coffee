@@ -9,9 +9,11 @@ CHARACTER = new createjs.Shape();
 CHARACTER.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 10)
 
 soundID = "ding";
+victorySoundID = "daDaDa"
 
 loadSound = () ->
   createjs.Sound.registerSound("./client/ding.mp3",soundID )
+  createjs.Sound.registerSound("./client/ff.mp3",victorySoundID)
 
 
 GOALS = []
@@ -119,6 +121,8 @@ socket.on 'updateTally', (msg) ->
 
 playsound = () ->
   createjs.Sound.play(soundID)
+victoryMusic = () ->
+  createjs.Sound.play(victorySoundID)
 
 socket.on 'initalize', (msg) ->
   init(msg)
@@ -135,6 +139,7 @@ socket.on 'goalHit',(msg) ->
   GOALS.splice(id,1)
   ctx.update()
 socket.on 'win',() ->
+  victoryMusic()
   alert "YOU WIN"
   socket.disconnect()
 socket.on 'chatUpdate', (msg) ->
