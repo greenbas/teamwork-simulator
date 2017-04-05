@@ -191,7 +191,7 @@ UPDATE_TALLY = function() {
     }
   }
   return EMIT_ALL('updateTally', {
-    msg: "" + inputs + " of {total} players have entered inputs"
+    msg: "" + inputs + " of " + total + " players have entered inputs"
   });
 };
 
