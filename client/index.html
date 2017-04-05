@@ -1,4 +1,23 @@
-hello world!
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>TEAMWORK SIMULATOR</title>
+
+    <!-- Bootstrap -->
+    <link href="client/css/bootstrap.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+<body>
 <table style="width: 501px; margin-right: calc(1%);">
 	<tbody>
 		<tr>
@@ -14,7 +33,7 @@ hello world!
 				<br>
 			</td>
 			<td style="width: 22.9249%;">
-				<button id="dirup">UP</button>
+				<button class="dirButton" id="dirup"><span class="glyphicon glyphicon-arrow-up"></span></button>
 			</td>
 			<td style="width: 19.5653%;">
 				<br>
@@ -28,13 +47,13 @@ hello world!
 				<br>
 			</td>
 			<td style="width: 20.1581%;">
-				<button id="dirleft">LEFT</button>
+				<button class="dirButton" id="dirleft"><span class="glyphicon glyphicon-arrow-left"></span></button>
 			</td>
 			<td style="width: 22.9249%;">
-				<button id="dirstop">STOP</button>
+				<button class="dirButton" id="dirstop"><span class="glyphicon glyphicon-remove-circle"></span></button>
 			</td>
 			<td style="width: 19.5653%;">
-				<button id="dirright">RIGHT</button>
+				<button class="dirButton" id="dirright"><span class="glyphicon glyphicon-arrow-right"></span></button>
 			</td>
 			<td>
 				<br>
@@ -48,7 +67,7 @@ hello world!
 				<br>
 			</td>
 			<td style="width: 22.9249%;">
-				<button id="dirdown">DOWN</button>
+				<button id="dirdown"><span class="glyphicon glyphicon-arrow-down"></span></button>
 			</td>
 			<td style="width: 19.5653%;">
 				<br>
@@ -63,10 +82,9 @@ hello world!
 
   <script src="client/js/socketio.js"></script>
 	<script src="client/js/dirEnum.js"></script>
-  <script src="client/js/client.js">
-
-  </script>
-
-<script>
-
-</script>
+  <script src="client/js/client.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	 <!-- Include all compiled plugins (below), or include individual files as needed -->
+	 <script src="client/dist/js/bootstrap.min.js"></script>
+ </body>
+</html>

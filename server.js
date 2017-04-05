@@ -56,6 +56,9 @@ Puppet = (function() {
     for (id in PLAYER_LIST) {
       player = PLAYER_LIST[id];
       switch (false) {
+        case player.input !== 0:
+          console.log("STOP!");
+          break;
         case player.input !== 1:
           console.log("RIGHT!");
           this.position.x += 10;
@@ -150,10 +153,15 @@ io.sockets.on('connection', function(socket) {
 });
 
 main = function() {
-  var key, socket;
+  var err, key, socket;
   UPDATE_TALLY();
   if (playerScan()) {
-    PUPPET.update();
+    try {
+      PUPPET.update();
+    } catch (_error) {
+      err = _error;
+      console.log(err);
+    }
     for (key in SOCKET_LIST) {
       socket = SOCKET_LIST[key];
       console.log("updating socket " + key);

@@ -9,36 +9,38 @@ app.use '/client', express.static(__dirname + '/client')
 serv.listen(PORT)
 console.log 'Server started.'
 
-class Player 
+class Player
     constructor: (@id) ->
         @input = 0
-    castVote: () ->  
+    castVote: () ->
     setInput: (n) -> @input = n
     getInput: () -> @input
-    resetInput: () -> @input = 0 
-        
+    resetInput: () -> @input = 0
 
-class Puppet 
+
+class Puppet
     constructor: () ->
         @position = {x: 250,y: 250,f: 1}
-    update: () -> 
+    update: () ->
         for id,player of PLAYER_LIST
             switch
-                when player.input is 1 
+                when player.input is 0
+                    console.log("STOP!")
+                when player.input is 1
                     console.log("RIGHT!")
                     @position.x += 10
-                when player.input is 2 
+                when player.input is 2
                     console.log("UP!")
                     @position.y -= 10
-                when player.input is 3 
+                when player.input is 3
                     console.log("LEFT!")
                     @position.x -= 10
-                when player.input is 4 
+                when player.input is 4
                     console.log("DOWN!")
-                    @position.y += 10 
+                    @position.y += 10
                 else throw new Error("invalid")
             player.resetInput()
-        return 
+        return
 
 SOCKET_LIST = {}
 PLAYER_LIST = {}
@@ -70,14 +72,14 @@ io.sockets.on 'connection', (socket) ->
       console.log "socket #{socket.id} connected"
       EMIT_ALL('updatePosition',{x:PUPPET.position.x,y:PUPPET.position.y})
       )
-    
+
   socket.on("disconnect", () ->
     console.log "socket #{socket.id} disconnected"
     delete SOCKET_LIST[socket.id]
     delete PLAYER_LIST[socket.id]
     )
-  
-  socket.on('buttonPress', (msg) -> 
+
+  socket.on('buttonPress', (msg) ->
     try
         console.log(player.getInput())
         player.setInput(msg.inputId)
@@ -86,21 +88,24 @@ io.sockets.on 'connection', (socket) ->
         socket.disconnect()
 
     )
-  return 
+  return
 
 
-main = () -> 
+main = () ->
     UPDATE_TALLY()
     if playerScan()
-        PUPPET.update()
+        try
+          PUPPET.update()
+        catch err
+          console.log(err)
         for key,socket of SOCKET_LIST
             console.log("updating socket #{key}")
             socket.emit('updatePosition',{x:PUPPET.position.x,y:PUPPET.position.y})
-    else 
+    else
         0;
-    return        
+    return
 
-playerScan = () -> 
+playerScan = () ->
     res = true
     for id,player of PLAYER_LIST
         res = (res and !!player.input)
