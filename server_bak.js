@@ -1,4 +1,4 @@
-var COLLISION_DETECTION, EMIT_ALL, GOALS, GOAL_DETECTION, Goal, PLAYER_LIST, PORT, PUPPET, Player, Puppet, SOCKET_LIST, UPDATE_TALLY, app, express, io, main, playerScan, serv;
+var EMIT_ALL, PLAYER_LIST, PORT, PUPPET, Player, Puppet, SOCKET_LIST, UPDATE_TALLY, app, express, io, main, playerScan, serv;
 
 PORT = process.env.PORT || 3000;
 
@@ -19,10 +19,9 @@ serv.listen(PORT);
 console.log('Server started.');
 
 Player = (function() {
-  function Player(id, name) {
+  function Player(id) {
     this.id = id;
-    this.name = name;
-    this.input = -1;
+    this.input = 0;
   }
 
   Player.prototype.castVote = function() {};
@@ -36,74 +35,12 @@ Player = (function() {
   };
 
   Player.prototype.resetInput = function() {
-    return this.input = -1;
+    return this.input = 0;
   };
 
   return Player;
 
 })();
-
-COLLISION_DETECTION = function(rect1, rect2) {
-  console.log("cond1 " + rect1.x + "  < " + (rect2.x + 10), "cond2 " + (rect1.x + 10) + " > " + rect2.x, "cond3  " + rect1.y + " < " + (rect2.y + 10), "cond4 " + (10 + rect1.y) + " > " + rect2.y);
-  if ((rect1.x < (rect2.x + 10)) && ((rect1.x + 10) > rect2.x) && (rect1.y < (rect2.y + 10)) && ((10 + rect1.y) > rect2.y)) {
-    return true;
-  } else {
-    return false;
-  }
-};
-
-Goal = (function() {
-  function Goal(x, y) {
-    this.x = x;
-    this.y = y;
-  }
-
-  return Goal;
-
-})();
-
-GOALS = [
-  {
-    x: 100,
-    y: 300
-  }, {
-    x: 300,
-    y: 100
-  }, {
-    x: 25,
-    y: 400
-  }, {
-    x: 400,
-    y: 25
-  }, {
-    x: 150,
-    y: 450
-  }
-];
-
-GOAL_DETECTION = function(x, y) {
-  var goal, id, _i, _len, _results;
-  _results = [];
-  for (id = _i = 0, _len = GOALS.length; _i < _len; id = ++_i) {
-    goal = GOALS[id];
-    if (COLLISION_DETECTION({
-      x: x,
-      y: y
-    }, {
-      x: goal.x,
-      y: goal.y
-    })) {
-      console.log("HIT GOAL ", id);
-      EMIT_ALL('goalHit', {
-        goalID: id
-      });
-      _results.push(GOALS.splice(id, 1));
-    } else {
-      _results.push(void 0);
-    }
-  }
-  return _results;
-};
 
 Puppet = (function() {
   function Puppet() {
@@ -115,51 +52,31 @@ Puppet = (function() {
   }
 
   Puppet.prototype.update = function() {
-    var id, player, queue;
-    queue = [];
+    var id, player;
     for (id in PLAYER_LIST) {
       player = PLAYER_LIST[id];
       switch (false) {
-        case player.input !== 0:
-          console.log("STOP!");
-          break;
         case player.input !== 1:
           console.log("RIGHT!");
-          this.position.x += 25;
+          this.position.x += 10;
           break;
         case player.input !== 2:
           console.log("UP!");
-          this.position.y -= 25;
+          this.position.y -= 10;
           break;
         case player.input !== 3:
           console.log("LEFT!");
-          this.position.x -= 25;
+          this.position.x -= 10;
           break;
         case player.input !== 4:
           console.log("DOWN!");
-          this.position.y += 25;
+          this.position.y += 10;
           break;
         default:
           throw new Error("invalid");
       }
-      queue.push({
-        name: player.name,
-        x: this.position.x,
-        y: this.position.y,
-        input: player.input
-      });
-      GOAL_DETECTION(this.position.x, this.position.y);
       player.resetInput();
     }
-    return queue;
-  };
-
-  Puppet.prototype.reset = function() {
-    return this.position = {
-      x: 250,
-      y: 250,
-      f: 1
-    };
   };
 
   return Puppet;
@@ -186,7 +103,7 @@ UPDATE_TALLY = function() {
   inputs = 0;
   for (key in PLAYER_LIST) {
     player = PLAYER_LIST[key];
-    if (!!(player.input + 1)) {
+    if (!!player.input) {
       inputs++;
     }
   }
@@ -202,19 +119,16 @@ io = require('socket.io')(serv, {});
 io.sockets.on('connection', function(socket) {
   var player;
   player = void 0;
-  socket.on('acknowledged', function(msg) {
+  socket.on('acknowledged', function() {
     socket.id = Math.random();
     console.log("NEW SOCKET " + socket.id);
     SOCKET_LIST[socket.id] = socket;
-    player = new Player(socket.id, msg.name);
+    player = new Player(socket.id);
     PLAYER_LIST[socket.id] = player;
     console.log("socket " + socket.id + " connected");
-    socket.emit('initalize', {
+    return EMIT_ALL('updatePosition', {
       x: PUPPET.position.x,
       y: PUPPET.position.y
-    });
-    return socket.emit('currentGoals', {
-      goals: GOALS
     });
   });
   socket.on("disconnect", function() {
@@ -236,24 +150,16 @@ io.sockets.on('connection', function(socket) {
 });
 
 main = function() {
-  var err, key, q, socket;
+  var key, socket;
   UPDATE_TALLY();
-  if (GOALS.length === 0) {
-    EMIT_ALL('win', {});
-  }
   if (playerScan()) {
-    q = void 0;
-    try {
-      q = PUPPET.update();
-    } catch (_error) {
-      err = _error;
-      console.log(err);
-    }
+    PUPPET.update();
     for (key in SOCKET_LIST) {
       socket = SOCKET_LIST[key];
       console.log("updating socket " + key);
       socket.emit('updatePosition', {
-        q: q
+        x: PUPPET.position.x,
+        y: PUPPET.position.y
       });
     }
   } else {
@@ -266,7 +172,7 @@ playerScan = function() {
   res = true;
   for (id in PLAYER_LIST) {
     player = PLAYER_LIST[id];
-    res = res && !!(player.input + 1);
+    res = res && !!player.input;
   }
   return res;
 };

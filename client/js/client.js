@@ -1,6 +1,8 @@
-var DEBUG, DIRECTION, PRINT, UNCLICK_ALL, ctx, socket, stopClicked;
+var CHARACTER, DEBUG, DIRECTION, GOALS, INIT, PRINT, UNCLICK_ALL, ctx, init, name, socket, stopClicked, tweenMove;
 
 stopClicked = false;
+
+INIT = true;
 
 DEBUG = true;
 
@@ -9,6 +11,12 @@ PRINT = function(x) {
     return console.log(x);
   }
 };
+
+CHARACTER = new createjs.Shape();
+
+CHARACTER.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 10);
+
+GOALS = [];
 
 DIRECTION = -1;
 
@@ -56,15 +64,57 @@ UNCLICK_ALL = function() {
   return _results;
 })();
 
-ctx = document.getElementById('ctx').getContext('2d');
+ctx = new createjs.Stage('ctx');
+
+init = function(data) {
+  CHARACTER.x = data.x;
+  CHARACTER.y = data.y;
+  ctx.addChild(CHARACTER);
+  ctx.update();
+  return INIT = false;
+};
+
+tweenMove = function(msg) {
+
+  /*it's absolutely fucked up I have to do this, but it works, not gonna knock it */
+  var data, input, name, tl, tw, x, y, _i, _len, _ref, _ref1, _ref2;
+  _ref = [msg[0].x, msg[0].y, msg[0].name, msg[0].input], x = _ref[0], y = _ref[1], name = _ref[2], input = _ref[3];
+  tl = new createjs.Timeline();
+  tw = createjs.Tween.get(CHARACTER).pause().to({
+    x: x,
+    y: y
+  }, 500);
+  console.log("x ", x, "y ", y);
+  tl.addTween(tw);
+  tl.setPaused(true);
+  _ref1 = msg.slice(1);
+  for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+    data = _ref1[_i];
+    tl.setPaused(false);
+    _ref2 = [data.x, data.y, data.name, data.input], x = _ref2[0], y = _ref2[1], name = _ref2[2], input = _ref2[3];
+    tw = tw.pause().to({
+      x: x,
+      y: y
+    }, 500);
+    tl.addTween(tw);
+    tl.setPaused(false);
+  }
+  tl.setPaused(false);
+};
+
+createjs.Ticker.setFPS(60);
+
+createjs.Ticker.addEventListener("tick", ctx);
 
 ctx.font = '30px Arial';
 
 socket = io();
 
-alert('press OK to activate');
+name = prompt("Please enter your name", "name");
 
-socket.emit('acknowledged');
+socket.emit('acknowledged', {
+  name: name
+});
 
 socket.on('serverMsg', function(data) {});
 
@@ -78,10 +128,40 @@ socket.on('updatePosition', function(data) {
     stopClicked = false;
   }
   UNCLICK_ALL();
-  ctx.clearRect(0, 0, 500, 500);
-  ctx.fillText('p', data.x, data.y);
+  tweenMove(data.q);
 });
 
 socket.on('updateTally', function(msg) {
   document.getElementById('count').innerHTML = msg.msg;
+});
+
+socket.on('initalize', function(msg) {
+  return init(msg);
+});
+
+socket.on('currentGoals', function(msg) {
+  var item, shape, _i, _len, _ref, _results;
+  _ref = msg.goals;
+  _results = [];
+  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+    item = _ref[_i];
+    shape = new createjs.Shape();
+    shape.graphics.beginFill("#FF0000").drawPolyStar(item.x, item.y, 10, 5, 0.6);
+    GOALS.push(ctx.addChild(shape));
+    _results.push(ctx.update());
+  }
+  return _results;
+});
+
+socket.on('goalHit', function(msg) {
+  var id;
+  id = msg.goalID;
+  ctx.removeChild(GOALS[id]);
+  GOALS.splice(id, 1);
+  return ctx.update();
+});
+
+socket.on('win', function() {
+  alert("YOU WIN");
+  return socket.disconnect();
 });
