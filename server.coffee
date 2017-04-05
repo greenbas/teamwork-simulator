@@ -90,7 +90,7 @@ UPDATE_TALLY = () ->
     for key,player of PLAYER_LIST
         if !!(player.input + 1)
            inputs++
-    EMIT_ALL('updateTally',{msg:"#{inputs}/#{total}"})
+    EMIT_ALL('updateTally',{msg:"#{inputs} of {total} players have entered inputs"})
 
 
 
