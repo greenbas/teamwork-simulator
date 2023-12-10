@@ -1,3 +1,7 @@
+/* 
+
+*/
+
 var APPEND_CHAT, CHARACTER, CLEAR_CHAT, DEBUG, DIRECTION, GOALS, INIT, INPUT_TO_CLASS, PRINT, UNCLICK_ALL, ctx, init, loadSound, name, playsound, socket, soundID, stopClicked, tweenMove, victoryMusic, victorySoundID;
 
 stopClicked = false;

@@ -1,3 +1,11 @@
+###
+TEAMWORK SIMULATOR
+A Twitch Plays Pokemon style game where many players control the same
+character to reach 5 goals on the gameboard. 
+Client Code
+Play @ https://teamwork-simulator.herokuapp.com/
+###
+
 stopClicked = false
 INIT = true
 DEBUG = true
